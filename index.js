@@ -34,17 +34,7 @@ async function run() {
     const db = client.db('Habits')
     const habitCollection = db.collection('Public-Habits')
 
-    // find,findOne
-    app.get('/habits', async (req, res) => {
 
-      const result = await habitCollection.find().toArray()
-      res.send(result)
-    })
-
-    app.get('/featuredHabits',async (req,res) => {
-        const result = await habitCollection.find().sort({ created_at: -1 }).limit(6).toArray()
-       res.send(result)
-    })
 
   
   app.listen(port, () => {
