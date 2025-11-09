@@ -41,7 +41,11 @@ async function run() {
       const result = await habitCollection.find().toArray()
       res.send(result)
     })
-
+      app.get('/featuredHabits',async (req,res) => {
+        const result = await habitCollection.find().sort({ created_at: -1 }).limit(6).toArray()
+       res.send(result)
+    })
+  
   
   app.listen(port, () => {
   console.log(`data base is listening on port ${port}`)})
