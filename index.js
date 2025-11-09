@@ -35,6 +35,12 @@ async function run() {
     const habitCollection = db.collection('Public-Habits')
 
 
+    // find,findOne
+    app.get('/habits', async (req, res) => {
+
+      const result = await habitCollection.find().toArray()
+      res.send(result)
+    })
 
   
   app.listen(port, () => {
