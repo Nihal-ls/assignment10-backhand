@@ -45,30 +45,9 @@ async function run() {
         const result = await habitCollection.find().sort({ created_at: -1 }).limit(6).toArray()
        res.send(result)
     })
-    // mark as complet api
-    app.post('/habit-logs' ,async (req,res) => {
-      const {_id,user_email} = req.body
-      console.log(_id,email);
-      const date = new Date()
-
-      const progressCollection = db.collection('habitlogs')
-     const existingprogress = await progressCollection.findOne({_id,user_email,date: date})
     
-       if(existingprogress){
-        return res.send('Already marked complete today')
-       }
-       
-       const dataStructure = {
-        _id: new ObjectId(_id),
-        user_email,
-        date: date,
-        completed: true
-       }
-       await progressCollection.insertOne(dataStructure)
-      res.send('Habit marked as complete')
-    })
-  
-  
+
+
   app.listen(port, () => {
   console.log(`data base is listening on port ${port}`)})
 
