@@ -46,6 +46,14 @@ async function run() {
        res.send(result)
     })
     
+    // add habits
+    app.post('/habits', async(req,res)=> {
+       const data = req.body
+       const result = habitCollection.insertOne(data)
+       res.send({
+        succeess: true
+       })
+    })
 
 
   app.listen(port, () => {
