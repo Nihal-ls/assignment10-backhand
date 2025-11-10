@@ -46,7 +46,7 @@ async function run() {
        res.send(result)
     })
     
-    // add habits
+    // Post habits
     app.post('/habits', async(req,res)=> {
        const data = req.body
        const result = habitCollection.insertOne(data)
@@ -56,7 +56,7 @@ async function run() {
     })
 
     // delete my habit
-    app.delete('habits/:id', async(req,res) => {
+    app.delete('/habits/:id', async(req,res) => {
       const {id} = req.params
       const objectId = new ObjectId(id)
       const filter = {_id: objectId}
@@ -66,6 +66,24 @@ async function run() {
         result
        })
        
+    })
+
+    // update habit
+    app.put('/habits/:id',async(req,res) => {
+        
+       const {id} = req.params
+       const data = req.body
+       console.log(data);
+      const objectId = new ObjectId(id)
+      const filter = {_id: objectId}
+      const update = {
+        $set: data
+      }
+      const result = await habitCollection.updateOne(filter,update) 
+
+      res.send({
+        succeess: true
+      })
     })
 
 
