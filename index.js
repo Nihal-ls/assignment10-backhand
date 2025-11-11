@@ -88,14 +88,41 @@ async function run() {
     })
     app.post('/completedHabits', async (req, res) => {
       const data = req.body
+      const email = data.Completed_by;
+      const habitId = data._id
+      const todaydate = new Date()
+
+      const existing = await CompletedHabitCollection.findOne({
+        Completed_by: email,
+        habit_id: habitId,
+        completed_at: todaydate
+      })
+      if (existing) {
+        return res.send('allredy added today')
+      }
+
+      const completionData = {
+        ...data,
+        habit_id: habitId,
+        completed_at: new Date(),
+        completed_date: todaydate
+      };
+
+      delete completionData._id
+
+
       const result = await CompletedHabitCollection.insertOne(data)
       res.send(result);
+
+
+
     });
     app.get('/completedHabits', async (req, res) => {
-      const email = req.query.email;
-      const query = email ? { Completed_by: email } : {};
-      const result = await CompletedHabitCollection.find(query).toArray();
-      res.send(result);
+      
+        const email = req.query.email;
+        const completed = await CompletedHabitCollection.find({ Completed_by: email }).toArray();
+        res.json(completed);
+      
     });
 
 
