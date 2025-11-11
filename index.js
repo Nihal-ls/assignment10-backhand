@@ -86,12 +86,18 @@ async function run() {
         succeess: true
       })
     })
+    app.post('/completedHabits', async (req, res) => {
+      const data = req.body
+      const result = await CompletedHabitCollection.insertOne(data)
+      res.send(result);
+    });
+    app.get('/completedHabits', async (req, res) => {
+      const email = req.query.email;
+      const query = email ? { Completed_by: email } : {};
+      const result = await CompletedHabitCollection.find(query).toArray();
+      res.send(result);
+    });
 
-    app.post('/completedHabits', async(req,res) => {
-       const data = req.body
-       const result = await CompletedHabitCollection.insertOne(data)
-       res.send(result)
-    })
 
     app.listen(port, () => {
       console.log(`data base is listening on port ${port}`)
