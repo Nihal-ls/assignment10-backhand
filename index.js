@@ -87,43 +87,85 @@ async function run() {
       })
     })
     app.post('/completedHabits', async (req, res) => {
-      const data = req.body
-      const email = data.Completed_by;
-      const habitId = data._id
-      const todaydate = new Date()
+      try {
+        const data = req.body;
+        const email = data.Completed_by;
+        const habitId = data.habit_id;
 
-      const existing = await CompletedHabitCollection.findOne({
-        Completed_by: email,
-        habit_id: habitId,
-        completed_at: todaydate
-      })
-      if (existing) {
-        return res.send('allredy added today')
+        const today = new Date();
+        const todayStr = today.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+        // Find the last completed record for this habit
+        const lastCompletion = await CompletedHabitCollection.find({
+          Completed_by: email,
+          habit_id: habitId
+        }).sort({ completed_at: -1 }).limit(1).toArray();
+
+        // Check if already completed today
+        if (lastCompletion.length > 0) {
+          const lastDate = new Date(lastCompletion[0].completed_date);
+          if (lastDate.toISOString().split("T")[0] === todayStr) {
+            return res.status(400).json({ message: "You already completed this habit today." });
+          }
+        }
+
+        // Calculate streak
+        let streak = 1;
+        if (lastCompletion.length > 0) {
+          const lastDate = new Date(lastCompletion[0].completed_date);
+          const yesterday = new Date();
+          yesterday.setDate(today.getDate() - 1);
+
+          if (lastDate.toISOString().split("T")[0] === yesterday.toISOString().split("T")[0]) {
+            streak = lastCompletion[0].streak + 1; // consecutive day → increase streak
+          }
+          // else missed a day → streak stays 1
+        }
+
+        // Prepare completion record
+        const completionData = {
+          habit_id: habitId,
+          Completed_by: email,
+          completed_at: today,
+          completed_date: todayStr,
+          streak
+        };
+
+        const result = await CompletedHabitCollection.insertOne(completionData);
+
+        res.json({
+          success: true,
+          message: "Habit completed successfully!",
+          streak: completionData.streak,
+          insertedId: result.insertedId
+        });
+
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: "Server error", error: err.message });
       }
-
-      const completionData = {
-        ...data,
-        habit_id: habitId,
-        completed_at: new Date(),
-        completed_date: todaydate
-      };
-
-      delete completionData._id
-
-
-      const result = await CompletedHabitCollection.insertOne(data)
-      res.send(result);
-
-
-
     });
+
     app.get('/completedHabits', async (req, res) => {
-      
-        const email = req.query.email;
-        const completed = await CompletedHabitCollection.find({ Completed_by: email }).toArray();
-        res.json(completed);
-      
+
+      const email = req.query.email;
+      const completed = await CompletedHabitCollection.find({ Completed_by: email }).toArray();
+      res.json(completed);
+
     });
+    // search
+    app.get('/search' ,async (req,res) => {
+      const searchedText = req.query.search
+     
+      const result = await habitCollection.find({habit_name: {$regex: searchedText,$options: 'i'}}).toArray()
+       res.send(result)
+    })
+    app.get('/filter' ,async (req,res) => {
+      const filterCategory = req.query.filter
+     
+      const result = await habitCollection.find({category: filterCategory}).toArray()
+       res.send(result)
+    })
 
 
     app.listen(port, () => {
