@@ -33,62 +33,69 @@ async function run() {
 
     const db = client.db('Habits')
     const habitCollection = db.collection('Public-Habits')
- 
+    const CompletedHabitCollection = db.collection('Completed-Habits')
+
     // all habits
     app.get('/habits', async (req, res) => {
 
       const result = await habitCollection.find().toArray()
       res.send(result)
     })
-// feautred habits
-      app.get('/featuredHabits',async (req,res) => {
-        const result = await habitCollection.find().sort({ created_at: -1 }).limit(6).toArray()
-       res.send(result)
+    // feautred habits
+    app.get('/featuredHabits', async (req, res) => {
+      const result = await habitCollection.find().sort({ created_at: -1 }).limit(6).toArray()
+      res.send(result)
     })
-    
+
     // Post habits
-    app.post('/habits', async(req,res)=> {
-       const data = req.body
-       const result = habitCollection.insertOne(data)
-       res.send({
+    app.post('/habits', async (req, res) => {
+      const data = req.body
+      const result = habitCollection.insertOne(data)
+      res.send({
         succeess: true
-       })
+      })
     })
 
     // delete my habit
-    app.delete('/habits/:id', async(req,res) => {
-      const {id} = req.params
+    app.delete('/habits/:id', async (req, res) => {
+      const { id } = req.params
       const objectId = new ObjectId(id)
-      const filter = {_id: objectId}
-        const result = await habitCollection.deleteOne(filter)
-       res.send({
+      const filter = { _id: objectId }
+      const result = await habitCollection.deleteOne(filter)
+      res.send({
         success: true,
         result
-       })
-       
+      })
+
     })
 
     // update habit
-    app.put('/habits/:id',async(req,res) => {
-        
-       const {id} = req.params
-       const data = req.body
-       console.log(data);
+    app.put('/habits/:id', async (req, res) => {
+
+      const { id } = req.params
+      const data = req.body
+      console.log(data);
       const objectId = new ObjectId(id)
-      const filter = {_id: objectId}
+      const filter = { _id: objectId }
       const update = {
         $set: data
       }
-      const result = await habitCollection.updateOne(filter,update) 
+      const result = await habitCollection.updateOne(filter, update)
 
       res.send({
         succeess: true
       })
     })
 
+    app.post('/completedHabits', async(req,res) => {
+       const data = req.body
+       const result = await CompletedHabitCollection.insertOne(data)
+       res.send(result)
+    })
 
-  app.listen(port, () => {
-  console.log(`data base is listening on port ${port}`)})
+    app.listen(port, () => {
+      console.log(`data base is listening on port ${port}`)
+    })
 
     await client.db("admin").command({ ping: 1 });
     console.log("DATABASE IS WORKING PERFECTLY");
