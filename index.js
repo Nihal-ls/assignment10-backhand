@@ -29,11 +29,12 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db('Habits')
     const habitCollection = db.collection('Public-Habits')
     const CompletedHabitCollection = db.collection('Completed-Habits')
+    const userscollection = db.collection('users')
 
     // all habits
     app.get('/habits', async (req, res) => {
@@ -154,25 +155,48 @@ async function run() {
 
     });
     // search
-    app.get('/search' ,async (req,res) => {
+    app.get('/search', async (req, res) => {
       const searchedText = req.query.search
-     
-      const result = await habitCollection.find({habit_name: {$regex: searchedText,$options: 'i'}}).toArray()
-       res.send(result)
+
+      const result = await habitCollection.find({ habit_name: { $regex: searchedText, $options: 'i' } }).toArray()
+      res.send(result)
     })
-    app.get('/filter' ,async (req,res) => {
+    app.get('/filter', async (req, res) => {
       const filterCategory = req.query.filter
-     
-      const result = await habitCollection.find({category: filterCategory}).toArray()
-       res.send(result)
+
+      const result = await habitCollection.find({ category: filterCategory }).toArray()
+      res.send(result)
     })
+
+
+        app.post('/user', async (req, res) => {
+            const userData = req.body
+
+          
+            userData.role = ""
+            const query = { email: userData.email }
+
+            const alreadyExist = await userscollection.findOne(query)
+
+            console.log('user already exist', !!alreadyExist);
+            if (alreadyExist) {
+              
+
+                return res.send(result)
+            }
+
+            console.log('saving  user');
+            const result = await userscollection.insertOne(userData)
+            res.send(result)
+        })
+
 
 
     app.listen(port, () => {
       console.log(`data base is listening on port ${port}`)
     })
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("DATABASE IS WORKING PERFECTLY");
   } finally {
     // await client.close();
